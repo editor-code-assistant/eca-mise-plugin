@@ -45,7 +45,7 @@ ECA can be configured globally or per project. See the [ECA documentation](https
 ## Supported Platforms
 
 - Linux (x64, ARM64)
-- macOS (Intel, Apple Silicon)  
+- macOS (Intel, Apple Silicon)
 - Windows (x64)
 
 ## Testing
