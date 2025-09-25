@@ -1,23 +1,10 @@
 #!/bin/bash
-# test/test.sh
 set -e
-
 echo "Testing ECA mise tool plugin..."
-
-# Install the plugin locally
-mise plugin link eca . || true
-
-# Test basic functionality
+MISE_VERBOSE=1 mise plugin link eca . || true
 mise install eca@latest
-mise use eca@latest
-
-# Verify installation
+mise use -g eca@latest
 eca --version
-
-# Test that eca server can start (basic check)
-timeout 5s eca server --help || echo "Server help command works"
-
+timeout 5s eca server --help || true
 echo "All tests passed!"
-
-# Clean up
-mise plugin remove eca
+mise plugin uninstall -p eca
