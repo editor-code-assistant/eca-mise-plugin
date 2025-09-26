@@ -1,4 +1,4 @@
-# mise-eca-plugin
+# eca-mise-plugin
 
 A [mise](https://mise.jdx.dev) tool plugin for [ECA (Editor Code Assistant)](https://eca.dev).
 
