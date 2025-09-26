@@ -17,7 +17,7 @@ ECA (Editor Code Assistant) is an AI-powered pair-programming tool that works wi
 
 ```bash
 # Install the plugin
-mise plugin install eca https://github.com/CsBigDataHub/mise-eca-plugin
+mise plugin install eca https://github.com/editor-code-assistant/eca-mise-plugin
 
 # Install latest version ECA
 mise install eca
