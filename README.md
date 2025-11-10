@@ -32,6 +32,21 @@ mise use -g eca@0.58.0
 eca --version
 ```
 
+## GitHub API Rate Limiting
+
+This plugin fetches ECA releases from GitHub. To avoid rate limiting issues, you can optionally set a GitHub token:
+
+```bash
+# Set one of these environment variables:
+export GITHUB_TOKEN="your_token_here"
+# or
+export GH_TOKEN="your_token_here"
+# or
+export GITHUB_API_TOKEN="your_token_here"
+```
+
+You can create a personal access token at https://github.com/settings/tokens (no special permissions needed for public repositories).
+
 ## Usage
 
 After installation, you can use ECA with your preferred editor:

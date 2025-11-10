@@ -1,11 +1,13 @@
 -- hooks/available.lua
 function PLUGIN:Available(ctx)
-    local http = require("http")
+    local helper = require("helper")
     local json = require("json")
-    local resp, err = http.get({url = "https://api.github.com/repos/editor-code-assistant/eca/releases"})
-    if err or resp.status_code ~= 200 then
-        error("Failed to fetch releases: " .. (err or resp.status_code))
+
+    local resp, err = helper.github_request("https://api.github.com/repos/editor-code-assistant/eca/releases")
+    if err then
+        error("Failed to fetch releases: " .. err)
     end
+
     local releases = json.decode(resp.body)
     local result = {}
     for i, r in ipairs(releases) do
