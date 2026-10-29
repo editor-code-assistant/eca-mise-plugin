@@ -1,96 +1,104 @@
 # eca-mise-plugin
 
-A [mise](https://mise.jdx.dev) tool plugin for [ECA (Editor Code Assistant)](https://eca.dev).
+A [mise](https://mise.jdx.dev) plugin for installing [ECA](https://eca.dev) (Editor Code Assistant) and its terminal client, [eca-cli](https://github.com/editor-code-assistant/eca-cli).
 
-## About ECA
+ECA is an AI pair-programming server that works with any editor: Emacs, VS Code, Vim, IntelliJ and others. You configure it once and get the same chat, agent tools and model choices everywhere. eca-cli lets you use it straight from the terminal. See [eca.dev](https://eca.dev) for the details.
 
-ECA (Editor Code Assistant) is an AI-powered pair-programming tool that works with any editor. It provides:
-
-- 📄 **Editor-agnostic**: protocol for any editor to integrate
-- ⚙️ **Single configuration**: Configure ECA making it work the same in any editor
-- ➿ **Chat interface**: ask questions, review code, work together to code
-- ☕ **Agentic**: let LLM work as an agent with its native tools and MCPs
-- 💉 **Context support**: giving more details about your code to the LLM
-- 🚀 **Multi models**: Login to OpenAI, Anthropic, Copilot, Ollama local models and many more
-
-## Installation
+## Install eca
 
 ```bash
-# Install the plugin
 mise plugin install eca https://github.com/editor-code-assistant/eca-mise-plugin
 
-# Install latest version ECA
-mise install eca
-mise use -g eca
+mise use -g eca          # latest
+mise use -g eca@0.58.0   # or a specific version
 
-# or install and use
-# desired version
-mise install eca@0.58.0
-mise use -g eca@0.58.0
-
-# Verify installation
 eca --version
 ```
 
-## GitHub API Rate Limiting
+## Install eca-cli
 
-This plugin fetches ECA releases from GitHub. To avoid rate limiting issues, you can optionally set a GitHub token:
+It's the same plugin. It decides what to install based on the name you give it, so add it again as `eca-cli`:
 
 ```bash
-# Set one of these environment variables:
-export GITHUB_TOKEN="your_token_here"
-# or
-export GH_TOKEN="your_token_here"
-# or
-export GITHUB_API_TOKEN="your_token_here"
+mise plugin install eca-cli https://github.com/editor-code-assistant/eca-mise-plugin
+
+mise use -g eca-cli           # latest
+mise use -g eca-cli@0.1.107   # or a specific version
+
+eca-cli --version
 ```
 
-You can create a personal access token at https://github.com/settings/tokens (no special permissions needed for public repositories).
+eca-cli only publishes Linux and macOS binaries. On Windows, grab `eca-cli.jar` from its [releases page](https://github.com/editor-code-assistant/eca-cli/releases) and run it with [Babashka](https://babashka.org/).
+
+## Using both
+
+Install the plugin under both names and the two tools are managed separately:
+
+```bash
+mise plugin install eca https://github.com/editor-code-assistant/eca-mise-plugin
+mise plugin install eca-cli https://github.com/editor-code-assistant/eca-mise-plugin
+mise use -g eca eca-cli
+```
+
+Or per project, in `mise.toml`:
+
+```toml
+[tools]
+eca = "latest"
+eca-cli = "latest"
+```
+
+eca-cli normally downloads its own copy of the eca server. If you'd rather it use the one mise installed:
+
+```bash
+eca-cli --eca "$(mise which eca)"
+```
 
 ## Usage
 
-After installation, you can use ECA with your preferred editor:
-
 ```bash
-# Start ECA server
-eca server
-
-# Or use with editor plugins (Emacs, VSCode, Vim, IntelliJ)
+eca server   # what editor plugins talk to; you rarely run this yourself
+eca-cli      # chat in the current directory
 ```
 
-## Configuration
+Configuration lives in ECA itself, either globally or per project. See the [ECA docs](https://eca.dev).
 
-ECA can be configured globally or per project. See the [ECA documentation](https://eca.dev) for detailed configuration options.
+## GitHub rate limits
 
-## Supported Platforms
-
-- Linux (x64, ARM64)
-- macOS (Intel, Apple Silicon)
-- Windows (x64)
-
-## Testing
-
-Run the test script to verify the plugin works:
+Release lookups go through the GitHub API, which allows 60 unauthenticated requests per hour. If you hit that limit, set a token. It doesn't need any scopes:
 
 ```bash
-./test/test.sh
+export GITHUB_TOKEN=...   # GH_TOKEN and GITHUB_API_TOKEN work too
 ```
 
-## Publishing Releases
+If one of these tokens is expired, the plugin retries without it. mise can also send its own GitHub token (`MISE_GITHUB_TOKEN`, or your `gh` login). If that one has gone stale you'll see `401` errors; check it with `mise token github`.
 
-1. Update version in `metadata.lua`
-2. Create annotated git tag:
+## Platforms
+
+|                             | eca | eca-cli          |
+|-----------------------------|-----|------------------|
+| Linux x64 / arm64           | yes | yes              |
+| macOS Intel / Apple Silicon | yes | yes              |
+| Windows x64                 | yes | no (use the jar) |
+
+## Development
+
+```bash
+./test/test.sh   # links the plugin as eca and eca-cli, installs both, runs them
+```
+
+To release:
+
+1. Bump `version` in `metadata.lua` and update `CHANGELOG.md`.
+2. Tag and push:
    ```bash
-   git tag -a v1.0.1 -m "Release v1.0.1"
-   git push origin v1.0.1
-   git push origin main
+   git tag -a v1.1.0 -m "Release v1.1.0"
+   git push origin main v1.1.0
    ```
-3. Create GitHub release with release notes
+3. Create a GitHub release from the tag.
 
-## Contributing
-
-Pull requests welcome! Please run `./test/test.sh` before submitting.
+Pull requests are welcome. Please run `./test/test.sh` first.
 
 ## License
 
-Apache-2.0 (same as ECA)
+Apache-2.0, same as ECA.
