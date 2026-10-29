@@ -26,6 +26,43 @@ function M.get_platform()
     return M.get_os() .. "-" .. M.get_arch()
 end
 
+-- Tool definitions. The plugin serves both tools; which one is decided by the
+-- name the plugin was installed under (e.g. `mise plugin install eca-cli <url>`).
+M.TOOLS = {
+    ["eca"] = {
+        name = "eca",
+        repo = "editor-code-assistant/eca",
+        bin = "eca",
+        asset = function(os_token, arch_token)
+            return string.format("eca-native-%s-%s.zip", os_token, arch_token)
+        end,
+        version_check = " --version"
+    },
+    ["eca-cli"] = {
+        name = "eca-cli",
+        repo = "editor-code-assistant/eca-cli",
+        bin = "eca-cli",
+        asset = function(os_token, arch_token)
+            if os_token == "windows" then
+                error("eca-cli has no native Windows binary; use `bb eca-cli.jar` instead")
+            end
+            return string.format("eca-cli-%s-%s.tar.gz", os_token, arch_token)
+        end,
+        version_check = " --version"
+    }
+}
+
+-- Determine which tool this plugin instance manages, from the plugin
+-- directory name (i.e. the name passed to `mise plugin install`).
+function M.get_tool()
+    local dir = (RUNTIME and RUNTIME.pluginDirPath) or ""
+    local base = (dir:gsub("[/\\]+$", "")):match("([^/\\]+)$") or ""
+    if base:lower():find("eca%-cli") or base:lower():find("eca_cli") then
+        return M.TOOLS["eca-cli"]
+    end
+    return M.TOOLS["eca"]
+end
+
 -- Make authenticated GitHub API request
 function M.github_request(url)
     local http = require("http")
@@ -47,6 +84,16 @@ function M.github_request(url)
 
     if err then
         return nil, "HTTP request failed: " .. err
+    end
+
+    -- Invalid/expired token: retry unauthenticated (public repos don't need auth)
+    if resp.status_code == 401 and token then
+        headers["Authorization"] = nil
+        token = nil
+        resp, err = http.get({url = url, headers = headers})
+        if err then
+            return nil, "HTTP request failed: " .. err
+        end
     end
 
     if resp.status_code == 403 then
